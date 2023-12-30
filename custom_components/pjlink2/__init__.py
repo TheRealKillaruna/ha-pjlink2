@@ -1,0 +1,1 @@
+"""PJLink2 Custom Component."""
