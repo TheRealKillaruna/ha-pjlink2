@@ -13,6 +13,7 @@ ATTR_MANUFACTURER_NAME = "manufacturer_name"
 ATTR_PROJECTOR_NAME = "projector_name"
 ATTR_RESOLUTION_X = "x_resolution"
 ATTR_RESOLUTION_Y = "y_resolution"
+ATTR_LAMP_HOURS = "lamp_hours"
 
 class ProjectorState(StrEnum):
     OFF = "off"

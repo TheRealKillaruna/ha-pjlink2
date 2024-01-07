@@ -2,10 +2,10 @@
   "codeowners": ["@TheRealKillaruna"],
   "config_flow": false,
   "dependencies": [],
-  "documentation": "https://github.com/TheRealKillaruna/pjlink2",
+  "documentation": "https://github.com/TheRealKillaruna/ha-pjlink2",
   "domain": "pjlink2",
   "iot_class": "calculated",
   "name": "PJLink2",
   "requirements": ["aiopjlink==1.0.5"],
-  "version": "0.1"
+  "version": "0.2"
 }

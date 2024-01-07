@@ -18,7 +18,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, HomeAssi
 
 import voluptuous as vol
 
-from .const import DOMAIN, CONF_ENCODING, DEFAULT_ENCODING, DEFAULT_PORT, DEFAULT_TIMEOUT, ATTR_PRODUCT_NAME, ATTR_MANUFACTURER_NAME, ATTR_PROJECTOR_NAME, ATTR_RESOLUTION_X, ATTR_RESOLUTION_Y, ProjectorState
+from .const import DOMAIN, CONF_ENCODING, DEFAULT_ENCODING, DEFAULT_PORT, DEFAULT_TIMEOUT, ATTR_PRODUCT_NAME, ATTR_MANUFACTURER_NAME, ATTR_PROJECTOR_NAME, ATTR_RESOLUTION_X, ATTR_RESOLUTION_Y, ATTR_LAMP_HOURS, ProjectorState
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -122,6 +122,8 @@ class PJLink2Sensor(Entity):
                 res = await Sources(self._projector).resolution()
                 self.attrs[ATTR_RESOLUTION_X] = res[0]
                 self.attrs[ATTR_RESOLUTION_Y] = res[1]
+                lmpHrs = await Lamp(self._projector).hours()
+                self.attrs[ATTR_LAMP_HOURS] = lmpHrs
             else:
                 if ATTR_RESOLUTION_X in self.attrs: del self.attrs[ATTR_RESOLUTION_X]
                 if ATTR_RESOLUTION_Y in self.attrs: del self.attrs[ATTR_RESOLUTION_Y]
