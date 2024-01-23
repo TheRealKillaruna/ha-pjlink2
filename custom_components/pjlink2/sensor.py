@@ -51,7 +51,7 @@ async def async_setup_platform(
     name = config.get(CONF_NAME)
     pjl = PJLink(host, port, password, timeout)
     sensors = [PJLink2Sensor(pjl, name)]
-    async_add_entities(sensors, update_before_add=True)
+    async_add_entities(sensors, update_before_add=False)
 
 
 class PJLink2Sensor(Entity):
@@ -64,16 +64,18 @@ class PJLink2Sensor(Entity):
         self._name = name
         self._state = None
         self._available = False
+        self._connectionErrorLogged = False
 
     async def async_will_remove_from_hass(self) -> None:
         """Close connection."""
         await super().async_will_remove_from_hass()
-        try:
-            await self._projector.__aexit__(0,0,0)
-        except PJLinkException as err:
-            _LOGGER.exception("PJLink2 ERROR for %s: %s", self._name, repr(err))
-        else:
-            _LOGGER.info("PJLink2 INFO for %s: Connection closed.", self._name)
+        if self._available:
+            try:
+                await self._projector.__aexit__(0,0,0)
+            except (PJLinkException, OSError) as err:
+                _LOGGER.error("PJLink2 ERROR when closing connection to %s: %s", self._name, repr(err))
+            else:
+                _LOGGER.info("PJLink2 INFO for %s: Connection closed.", self._name)
 
     @property
     def name(self) -> str:
@@ -127,19 +129,24 @@ class PJLink2Sensor(Entity):
             else:
                 if ATTR_RESOLUTION_X in self.attrs: del self.attrs[ATTR_RESOLUTION_X]
                 if ATTR_RESOLUTION_Y in self.attrs: del self.attrs[ATTR_RESOLUTION_Y]
+                
+            self._connectionErrorLogged = False # after successful update, enable error logging for next connection issue
         
         except PJLinkProjectorError:
             # resolution cannot be queried due to no input
             if ATTR_RESOLUTION_X in self.attrs: del self.attrs[ATTR_RESOLUTION_X]
             if ATTR_RESOLUTION_Y in self.attrs: del self.attrs[ATTR_RESOLUTION_Y]
             _LOGGER.info("PJLink2 INFO for %s: Cannot get resolution", self._name)
-        except PJLinkException as err:
+        except (PJLinkException, OSError) as err:
+            if not self._connectionErrorLogged: 
+                _LOGGER.error("PJLink2 ERROR for %s: %s", self._name, repr(err))
+                self._connectionErrorLogged = True # do not spam logfile with same error message
             self._state = None
-            self._available = False
-            _LOGGER.exception("PJLink2 ERROR for %s: %s", self._name, repr(err))
-            try:
-                await self._projector.__aexit__(0,0,0)
-            except PJLinkException as err:
-                _LOGGER.exception("PJLink2 ERROR for %s: %s", self._name, repr(err))
-            else:
-                _LOGGER.info("PJLink2 INFO for %s: Connection closed.", self._name)
+            if self._available:
+                self._available = False # only call exit function once after disconnect
+                try:
+                    await self._projector.__aexit__(0,0,0)
+                except (PJLinkException, OSError) as err:
+                    _LOGGER.error("PJLink2 ERROR when closing connection to %s: %s", self._name, repr(err))
+                else:
+                    _LOGGER.info("PJLink2 INFO for %s: Connection closed.", self._name)
