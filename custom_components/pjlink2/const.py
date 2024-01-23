@@ -6,7 +6,7 @@ DOMAIN = "pjlink2"
 CONF_ENCODING = "encoding"
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_PORT = 4352
-DEFAULT_TIMEOUT = 4
+DEFAULT_TIMEOUT = 2
 
 ATTR_PRODUCT_NAME = "product_name"
 ATTR_MANUFACTURER_NAME = "manufacturer_name"
